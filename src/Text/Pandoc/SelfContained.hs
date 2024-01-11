@@ -18,8 +18,9 @@ the HTML using data URIs.
 module Text.Pandoc.SelfContained ( makeDataURI, makeSelfContained ) where
 import Codec.Compression.GZip as Gzip
 import Control.Applicative ((<|>))
+import Data.Base64.Types (extractBase64)
 import Data.ByteString (ByteString)
-import Data.ByteString.Base64 (encode)
+import Data.ByteString.Base64 (encodeBase64')
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
@@ -52,7 +53,7 @@ makeDataURI :: (MimeType, ByteString) -> T.Text
 makeDataURI (mime, raw) =
   if textual
      then "data:" <> mime' <> "," <> T.pack (escapeURIString isOk (toString raw))
-     else "data:" <> mime' <> ";base64," <> toText (encode raw)
+     else "data:" <> mime' <> ";base64," <> toText (extractBase64 $ encodeBase64' raw)
   where textual = "text/" `T.isPrefixOf` mime
         mime' = if textual && T.any (== ';') mime
                    then mime <> ";charset=utf-8"
